@@ -2,7 +2,7 @@
 
 # 🪤 Dead Man's Switch
 
-<img src="logo.png" alt="Dead Man's Switch" width="180"/>
+<img src="https://raw.githubusercontent.com/AnonymoDGH/deadman-switch/main/logo.png" alt="Dead Man's Switch" width="180"/>
 
 **A heartbeat watchdog that fires when you go silent.**
 
@@ -95,7 +95,7 @@ All commands accept `--config <path>` to point at a different config file.
 
 ## How it works
 
-<img src="assets/architecture.svg" alt="Architecture" width="820"/>
+<img src="https://raw.githubusercontent.com/AnonymoDGH/deadman-switch/main/assets/architecture.svg" alt="Architecture" width="820"/>
 
 ## Tests
 
