@@ -4,7 +4,7 @@
 
 <img src="https://raw.githubusercontent.com/AnonymoDGH/deadman-switch/main/logo.png" alt="Dead Man's Switch" width="180"/>
 
-**A heartbeat watchdog that fires when you go silent.**
+**A heartbeat watchdog that fires when you go silent — now a full handler toolkit.**
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -20,9 +20,17 @@
 ## What is it?
 
 The **Dead Man's Switch** is the oldest trick in the espionage playbook, turned
-into a tiny command-line tool. You arm it with a TTL (time-to-live). You stamp
-a heartbeat file — a proof of life. If the heartbeat goes stale — if you're
-taken, you're cut off, or your cron just breaks — the switch fires its payload.
+into a command-line toolkit. You arm it with a TTL (time-to-live). You stamp a
+heartbeat — a proof of life. If the heartbeat goes stale — if you're taken,
+you're cut off, or your cron just breaks — the switch escalates and fires its
+payload.
+
+**v0.2.0** grows the prop into the whole apparatus around it: a deterministic
+engine with a grace/warning phase, a tamper-evident event log, signed
+heartbeats and cancel tokens, proof-of-life challenges with a covert duress
+flag, Shamir secret sharing for the disarm key, quorum cancel approval,
+escalation policies, delivery channels with retry, a contact roster, a
+scenario simulator, handler reporting, and pre-flight checklists.
 
 A natural fit for:
 
@@ -33,10 +41,19 @@ A natural fit for:
 
 ## Features
 
-- ⏱️ Heartbeat file with configurable TTL
-- 🔫 Four payload types: `print`, `webhook`, `email`, `command`
-- 🌀 Watch mode — blocks and fires the moment the switch trips
-- 🛡️ `status` command tells you exactly how much slack you have left
+- ⏱️ Heartbeat with configurable TTL **and grace/warning phase**
+- 🔫 Six payload types: `print`, `webhook`, `email`, `command`, `file`, `notify`
+- 🧾 **Tamper-evident event log** (SHA-256 hash chain)
+- 🔐 **Signed heartbeats & cancel tokens** (HMAC, replay-protected)
+- 🧠 **Proof-of-life challenges** with a covert **duress** answer
+- 🗝️ **Shamir secret sharing** to split the disarm key among trusted parties
+- 👥 **Quorum cancel** — M-of-N approvals before a cancel is honored
+- 📈 **Escalation policies** — remind → alert → release on a schedule
+- 📡 **Delivery channels** with retry queue (file + loopback UDP)
+- 🧪 **Scenario simulator** — replay beat patterns on a deterministic clock
+- 📋 **Handler reporting** — status, timeline, post-mortem, runbook, debrief
+- ✅ **Pre-flight checklists** and **config auditing**
+- 🕯️ **Digital legacy planner** — staged, gated release of assets
 - 📦 Zero runtime dependencies, pure Python standard library
 
 ## Install
@@ -72,6 +89,8 @@ dms watch
 
 ## CLI reference
 
+All commands accept `--config <path>` to point at a different config file.
+
 | Command | What it does |
 |---|---|
 | `dms init` | Create a default config and first heartbeat |
@@ -80,8 +99,19 @@ dms watch
 | `dms status` | Report age and whether the switch is tripped |
 | `dms watch [--interval <s>]` | Block until the payload fires |
 | `dms disarm` | Neuter the payload (safe mode) |
-
-All commands accept `--config <path>` to point at a different config file.
+| `dms report` | Render a live status report |
+| `dms dry-run` | Show what the payload would do, without doing it |
+| `dms audit` | Audit the config for misconfiguration |
+| `dms plan [--window <s>] [--safety <f>]` | Recommend a beat schedule |
+| `dms runbook [--out <file>]` | Render the handler runbook |
+| `dms checklist [pre-arm\|pre-travel\|pre-release]` | Show a pre-flight checklist |
+| `dms templates [--apply <name>]` | List or apply switch templates |
+| `dms policy [--ttl <s>]` | Show the default escalation policy |
+| `dms simulate --scenario <regular\|silence\|missed>` | Run a deterministic scenario |
+| `dms split <secret> -n <N> -k <K> [--out-dir <d>]` | Split a secret into shares |
+| `dms combine <share-files...>` | Reconstruct a secret from shares |
+| `dms beacon --key <k> --switch-id <id> --seq <n> --ts <t>` | Emit a signed liveness beacon |
+| `dms export --format <json\|markdown\|cheat-sheet>` | Export switch state/history |
 
 ## Payloads
 
@@ -91,6 +121,65 @@ All commands accept `--config <path>` to point at a different config file.
   "subject": "SILENCE", "message": "The package is loose.",
   "smtp_host": "smtp.example.com", "smtp_user": "u", "smtp_pass": "p" }
 { "type": "command", "command": "python notify.py --urgent" }
+{ "type": "file", "path": "release.txt", "message": "..." }
+{ "type": "notify", "label": "trusted-contact" }
+```
+
+## The handler toolkit (v0.2.0)
+
+The package is organized as small, testable modules you can compose:
+
+| Module | Purpose |
+|---|---|
+| `engine` | Deterministic switch state machine (arm/beat/warn/trip/fire) |
+| `state` | The switch lifecycle FSM |
+| `events` | Tamper-evident hash-chained event log |
+| `clock` | Injectable clocks (`FixedClock`) for deterministic tests |
+| `store` | Atomic on-disk persistence of state + log |
+| `payloads` | The six payload actions + `dry_run` |
+| `policy` | Escalation policies (remind/alert/release) |
+| `crypto` | PBKDF2 keys, signed heartbeats & cancel tokens |
+| `proof` | Proof-of-life challenges + duress flag |
+| `duress` | Spoken duress code pairs |
+| `recovery` | Shamir secret sharing for the disarm key |
+| `quorum` | M-of-N cancel approval |
+| `beacon` | Signed outbound liveness beacons + watcher |
+| `heartbeat` | Signed heartbeat records + ledger |
+| `channels` | Delivery channels (file, loopback UDP) + retry queue |
+| `contacts` | Trusted contact roster with clearance + rotation |
+| `dispatcher` | Routes alerts to contacts by escalation level |
+| `simulator` | Deterministic scenario replay |
+| `schedule` | Beat schedule planning + cron hints |
+| `metrics` | Heartbeat regularity (jitter, punctuality) |
+| `watchdog` | Multi-switch fleet manager on a shared clock |
+| `handler` | Mission-control orchestrator for one switch |
+| `audit` | Config security linting |
+| `checklists` | Pre-arm / pre-travel / pre-release checklists |
+| `templates` | Preset switch configurations |
+| `scenarios` | Tabletop threat scenarios for training |
+| `report` / `runbook` / `debrief` / `exporter` | Handler documentation |
+| `escrow` | Encrypted payload escrow released on fire |
+| `legacy` | Staged digital-legacy release planner |
+| `inventory` | Registry of all switches (anti-forgotten-switch) |
+| `rotation` | Key/token rotation scheduling |
+| `journal` | Operator journal attached to beats |
+| `formats` / `timefmt` | Serialization + human-friendly time |
+
+### Example: simulate a silence scenario
+
+```bash
+dms simulate --scenario silence --ttl 60 --duration 300 \
+             --beat-interval 30 --silence-from 60
+# scenario:     silence
+# final state:  fired
+# fired:        yes
+```
+
+### Example: split the disarm key
+
+```bash
+dms split "my-disarm-key" -n 3 -k 2 --out-dir ./shares
+dms combine ./shares/share-1.txt ./shares/share-3.txt
 ```
 
 ## How it works
@@ -103,6 +192,9 @@ All commands accept `--config <path>` to point at a different config file.
 pip install pytest
 pytest
 ```
+
+The suite is fully deterministic: the engine runs on an injected `FixedClock`,
+network tests use loopback UDP, and there are no external services.
 
 ## License
 

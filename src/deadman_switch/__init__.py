@@ -117,9 +117,35 @@ def watch(path: Path | str | None = None, cfg: dict | None = None,
         time.sleep(interval)
 
 
+__version__ = "0.2.0"
+
+# --- v0.2.0 public API -----------------------------------------------------
+# The modules below are the expanded toolkit. They are imported by name so
+# that the package exposes them as attributes; use e.g.
+#   from deadman_switch.engine import Switch
+from . import (  # noqa: E402
+    audit, beacon, channels, checklists, clock, contacts, crypto,
+    debrief, dispatcher, drill, duress, engine, escrow, events, exporter,
+    formats,
+    handler, heartbeat as heartbeat_records, inventory, journal, legacy,
+    metrics, payloads, policy, proof, quorum, recovery, report, rotation,
+    runbook, scenarios, schedule, simulator, state, store, templates,
+    timefmt, watchdog,
+)
+
 __all__ = [
+    "__version__",
+    # original v0.1 API
     "CONFIG", "CONFIG_DIR", "DEFAULT_TTL",
     "default_config", "load_config", "save_config",
     "heartbeat", "last_beat", "age_seconds",
     "fire", "check", "watch",
+    # v0.2.0 modules
+    "audit", "beacon", "channels", "checklists", "clock", "contacts",
+    "crypto", "debrief", "dispatcher", "drill", "duress", "engine", "escrow",
+    "events",
+    "exporter", "formats", "handler", "heartbeat_records", "inventory",
+    "journal", "legacy", "metrics", "payloads", "policy", "proof", "quorum",
+    "recovery", "report", "rotation", "runbook", "scenarios", "schedule",
+    "simulator", "state", "store", "templates", "timefmt", "watchdog",
 ]
